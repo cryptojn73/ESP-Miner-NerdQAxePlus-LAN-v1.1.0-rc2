@@ -2,6 +2,20 @@
 
 # ESP-Miner-Nerdaxe version
 
+> ### ⚡ Wired LAN / Ethernet support (Jabitaxe W5500 kit)
+> This fork adds **optional wired Ethernet** for the T-Display S3 based boards
+> (NerdQAxe+/++, NerdOCTAXE and NerdOCTAXE-Gamma) using the **Jabitaxe W5500 LAN
+> adapter kit**. Enable it in `idf.py menuconfig` → *NerdQAxe LAN (Jabitaxe
+> W5500)* → `CONFIG_ENABLE_JABITAXE_W5500`, then build for your board
+> (e.g. `BOARD=NERDOCTAXEGAMMA`). The W5500 runs on a dedicated SPI2 bus
+> (MOSI=12, MISO=16, SCLK=2, CS=21, RST=13, INT=11); the miner **prefers the
+> wired link and falls back to WiFi automatically**, and DNS is applied over the
+> Ethernet interface so stratum resolves correctly. Verified mining over LAN on
+> a NerdOCTAXE-Gamma. Prebuilt binaries are attached to the GitHub release.
+>
+> _Note: on boards where the CAN extension shares GPIO21/16, don't populate both
+> the LAN adapter and the CAN board at once._
+
 | Supported Targets | ESP32-S3              |
 | ----------------- | --------------------- |
 | Required Platform | >= ESP-IDF v5.3.X       |

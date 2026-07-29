@@ -19,8 +19,12 @@
 
 static const char *TAG_ETH = "w5500";
 
+// Poll mode (INT disabled) by default. On the NerdOCTAXE/NerdQAxe boards the
+// Jabitaxe adapter's INT line (GPIO11) proved unreliable and caused the system
+// to hang under Ethernet traffic; polling is stable. Define W5500_USE_INT=1 to
+// re-enable interrupt mode.
 #ifndef W5500_USE_INT
-#define W5500_USE_INT 1
+#define W5500_USE_INT 0
 #endif
 
 W5500::W5500()
@@ -186,6 +190,13 @@ esp_err_t W5500::earlySpiInit()
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
 
+    // CRITICAL: ETH_PHY_DEFAULT_CONFIG() defaults reset_gpio_num to GPIO5, which
+    // on the T-Display S3 is the LCD reset pin. Left unset, the esp_eth driver
+    // pulses GPIO5 during PHY reset and resets the display controller, freezing
+    // the screen. We perform our own W5500 hardware reset (hwResetGpio) instead,
+    // so disable the driver-managed reset pin entirely.
+    phy_config.reset_gpio_num = -1;
+
     spi_device_interface_config_t spi_devcfg = {};
     spi_devcfg.command_bits = 16;
     spi_devcfg.address_bits = 8;
@@ -200,7 +211,7 @@ esp_err_t W5500::earlySpiInit()
     w5500_config.int_gpio_num = m_pinInt;
 #else
     w5500_config.int_gpio_num = -1;
-    w5500_config.poll_period_ms = 1;
+    w5500_config.poll_period_ms = 10;
 #endif
 
     esp_eth_mac_t *mac = esp_eth_mac_new_w5500(&w5500_config, &mac_config);

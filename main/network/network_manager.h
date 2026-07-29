@@ -72,6 +72,7 @@ class NetworkManager {
 
   private:
     void updateDefaultRoute();
+    void applyEthDns();
 
     void onWifiGotIp();
     void onWifiDisconnected();

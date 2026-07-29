@@ -6,6 +6,9 @@
 #include "esp_netif.h"
 #include "esp_wifi.h"
 
+#include "lwip/dns.h"
+#include "lwip/ip_addr.h"
+
 static const char *TAG_NET = "netmgr";
 
 NetworkManager *NetworkManager::s_instance = nullptr;
@@ -163,6 +166,41 @@ void NetworkManager::onEthGotIp()
     }
 
     updateDefaultRoute();
+    applyEthDns();
+}
+
+void NetworkManager::applyEthDns()
+{
+    // With both WiFi and Ethernet netifs present, the DNS servers obtained by
+    // Ethernet's DHCP client are not always promoted to lwIP's global resolver
+    // (especially when WiFi never obtained a lease). getaddrinfo() then fails
+    // with EAI_FAIL (202) and stratum can't resolve the pool hostnames even
+    // though routing works. Force the resolver to use Ethernet's DNS, and add a
+    // public fallback so name resolution works even if the lease provided none.
+    esp_netif_t *eth = m_eth.getNetif();
+    if (!eth) {
+        return;
+    }
+
+    esp_netif_dns_info_t leaseDns = {};
+    bool haveLease = (esp_netif_get_dns_info(eth, ESP_NETIF_DNS_MAIN, &leaseDns) == ESP_OK &&
+                      leaseDns.ip.u_addr.ip4.addr != 0);
+
+    ip_addr_t primary = {};
+    if (haveLease) {
+        primary.type = IPADDR_TYPE_V4;
+        primary.u_addr.ip4.addr = leaseDns.ip.u_addr.ip4.addr;
+        ESP_LOGI(TAG_NET, "ETH DNS (from lease): " IPSTR, IP2STR(&leaseDns.ip.u_addr.ip4));
+    } else {
+        IP_ADDR4(&primary, 8, 8, 8, 8);
+        ESP_LOGW(TAG_NET, "ETH lease provided no DNS; using 8.8.8.8");
+    }
+    dns_setserver(0, &primary);
+
+    // Public fallback resolver (Cloudflare) in slot 1.
+    ip_addr_t fallback = {};
+    IP_ADDR4(&fallback, 1, 1, 1, 1);
+    dns_setserver(1, &fallback);
 }
 
 

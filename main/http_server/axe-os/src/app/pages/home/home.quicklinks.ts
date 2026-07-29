@@ -190,7 +190,9 @@ const POOLS: PoolMeta[] = [
     match: (h) => h.includes('public-pool.io'),
     quickLink: (a) => `https://web.public-pool.io/#/app/${a}`,
     iconUrl: 'assets/pools/public-pool.png',
-    caps: { ping: false },
+    // public-pool.io does respond to ICMP in practice, so surface the ping/loss
+    // stats the firmware already measures instead of forcing an "n/a" display.
+    caps: { ping: true },
   },
   {
     id: 'ocean',

@@ -366,3 +366,26 @@ menu "WiFi Configuration"
     endchoice
 
 endmenu
+
+menu "NerdQAxe LAN (Jabitaxe W5500)"
+
+    config ENABLE_JABITAXE_W5500
+        bool "Enable Jabitaxe W5500 SPI Ethernet (LAN adapter kit)"
+        default n
+        help
+            Enable the Wiznet W5500 SPI Ethernet driver for the Jabitaxe LAN
+            adapter shield on T-Display S3 based boards (NerdQaxe+, NerdQaxe++,
+            NerdOctaxe and the Gamma family).
+
+            The W5500 uses a dedicated SPI2 host with:
+                MOSI = GPIO12, MISO = GPIO16, SCLK = GPIO2, CS = GPIO21,
+                RST  = GPIO13, INT  = GPIO11.
+
+            WARNING: CS (GPIO21) and MISO (GPIO16) are the same pins used by the
+            optional CAN extension board on these targets. Do NOT populate both
+            the LAN adapter and the CAN extension at the same time.
+
+            Q1370/Q1373 boards enable Ethernet unconditionally and are not
+            affected by this option.
+
+endmenu

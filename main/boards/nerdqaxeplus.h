@@ -65,4 +65,15 @@ class NerdQaxePlus : public Board {
     bool isCanSlave() override;
     int  getCanTxPin() override { return 21; }
     int  getCanRxPin() override { return 16; }
+
+    // Jabitaxe W5500 LAN adapter (opt-in via `idf.py menuconfig`).
+    // NOTE: the W5500 CS (GPIO21) and MISO (GPIO16) share the CAN extension
+    // pins above, so the LAN adapter and CAN extension are mutually exclusive.
+    bool hasEthernet() override {
+#ifdef CONFIG_ENABLE_JABITAXE_W5500
+        return true;
+#else
+        return false;
+#endif
+    }
 };

@@ -98,8 +98,20 @@ bool NerdOctaxeGamma::initBoard()
     bool ret = NerdQaxePlus::initBoard();
 
     // Probe both TMP451 mux chips – only present on newer hardware revisions.
-    // Note: init() will configure the MUX A0/A1 GPIOs as outputs (repurposing
-    // GPIO3 after VR detection, which is already done in the constructor).
+    // Note: init() will configure the MUX A0/A1 GPIOs (GPIO2/GPIO12) as outputs.
+#ifdef CONFIG_ENABLE_JABITAXE_W5500
+    // The Jabitaxe W5500 LAN adapter uses GPIO2 (SPI SCLK) and GPIO12 (SPI MOSI),
+    // which are exactly the TMP451 mux A0/A1 select lines. earlyEthSpiInit() has
+    // already routed those pins to the SPI2 bus before this runs, so probing the
+    // mux would reconfigure them as GPIO outputs and break the Ethernet link.
+    // Skip the mux entirely while LAN is enabled. Rev 3.1 boards have no mux
+    // chip anyway; on rev 3.4 this disables per-ASIC temps via the mux (an
+    // unavoidable trade-off since the LAN adapter physically occupies those pins).
+    m_hasTMux[0] = false;
+    m_hasTMux[1] = false;
+    ESP_LOGW(TAG, "Jabitaxe W5500 enabled: skipping TMP451 mux init "
+                  "(GPIO2/GPIO12 reserved for Ethernet SPI)");
+#else
     m_hasTMux[0] = (m_tmp451[0].init() == ESP_OK);
     m_hasTMux[1] = (m_tmp451[1].init() == ESP_OK);
 
@@ -112,6 +124,7 @@ bool NerdOctaxeGamma::initBoard()
         ESP_LOGI(TAG, "TMP451 mux 1 found (ASICs 4-7, addr 0x4e)");
     else
         ESP_LOGW(TAG, "TMP451 mux 1 not found (ASICs 4-7)");
+#endif
 
     return ret;
 }
