@@ -1,0 +1,38 @@
+key,type,encoding,value
+main,namespace,,
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ↓↓↓ NETWORK & STRATUM CONFIG – Must override when using config file ↓↓↓
+# These values are also available in menuconfig (Kconfig), but are meant to be
+# overridden here when provisioning or deploying individual devices.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# LAN Activation – 1: Enable LAN (Ethernet), 0: Disable
+sys_lan_enable,data,u16,1
+
+# LAN Controller Type – w5500, enc28j60, etc.
+sys_lan_type,data,string,w5500
+
+# Wi-Fi SSID – On laisse vide car le LAN est actif
+wifissid,data,string,
+
+# Wi-Fi password – On laisse vide car le LAN est actif
+wifipass,data,string,
+
+# Device hostname on the local network
+hostname,data,string,bitaxe
+
+# Stratum server URL – mining pool or stratum proxy
+stratumurl,data,string,public-pool.io
+
+# Stratum port – usually defined by your pool (default varies)
+stratumport,data,u16,3333
+
+# Stratum username – usually your wallet address + optional worker ID
+stratumuser,data,string,bc1q7n70rumyv6lvu8avpml0c3uggvssfu52egum3q.nerdqaxe
+
+# Stratum password – often just "x"
+stratumpass,data,string,x
+
+# Initial suggested Stratum difficulty
+stratumdiff,data,u64,1000
